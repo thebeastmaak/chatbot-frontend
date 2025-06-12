@@ -9,7 +9,7 @@ async function sendQuestion() {
   userInput.value = '';
 
   try {
-    const res = await fetch('https://your-render-backend-url.onrender.com/ask', {
+    const res = await fetch('https://fisu-chatbot.onrender.com', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question })
