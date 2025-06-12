@@ -2,18 +2,131 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rhine-Ruhr 2025 AI Chat</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FISU AI Chat</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
+      color: white;
+    }
+    #chat-container {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+    }
+    #messages {
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid white;
+      padding: 10px;
+      margin-bottom: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+    }
+    .message {
+      margin: 5px 0;
+    }
+    .user {
+      text-align: right;
+      font-weight: bold;
+    }
+    .bot {
+      text-align: left;
+      font-style: italic;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+    }
+    input {
+      width: 75%;
+      margin-right: 10px;
+    }
+    button {
+      width: 20%;
+      background: #4facfe;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background: #3a9de1;
+    }
+  </style>
 </head>
 <body>
-  <div id="chat-container">
-    <h2>Ask About Rhine-Ruhr 2025 🏅</h2>
-    <div id="chat-box"></div>
-    <input type="text" id="user-input" placeholder="Ask a question..." />
-    <button onclick="sendQuestion()">Ask</button>
-  </div>
 
-  <script src="script.js"></script>
+<div id="chat-container">
+  <div id="messages"></div>
+  <input type="text" id="input" placeholder="Ask me about Rhine Ruhr 2025..." />
+  <button id="sendBtn">Send</button>
+</div>
+
+<script>
+  const messagesDiv = document.getElementById('messages');
+  const input = document.getElementById('input');
+  const sendBtn = document.getElementById('sendBtn');
+
+  function addMessage(text, sender) {
+    const msg = document.createElement('div');
+    msg.classList.add('message', sender);
+    msg.textContent = text;
+    messagesDiv.appendChild(msg);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  }
+
+  async function sendQuestion(question) {
+    addMessage(question, 'user');
+    input.value = '';
+    addMessage('Bot: ...', 'bot');
+
+    try {
+      const response = await fetch('http://localhost:3000/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+
+      const data = await response.json();
+      // Remove the "Bot: ..." message and add actual answer
+      const lastBotMessage = document.querySelector('#messages .bot:last-child');
+      if (lastBotMessage) lastBotMessage.remove();
+
+      addMessage(data.answer, 'bot');
+
+    } catch (error) {
+      const lastBotMessage = document.querySelector('#messages .bot:last-child');
+      if (lastBotMessage) lastBotMessage.remove();
+      addMessage("Bot: Sorry, I couldn't fetch the answer.", 'bot');
+      console.error(error);
+    }
+  }
+
+  sendBtn.addEventListener('click', () => {
+    const question = input.value.trim();
+    if (question) sendQuestion(question);
+  });
+
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const question = input.value.trim();
+      if (question) sendQuestion(question);
+    }
+  });
+</script>
+
 </body>
 </html>
